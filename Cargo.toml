@@ -1,0 +1,22 @@
+# Qoyri pupil-osc — measures how bright the VRChat view is and drives the
+# avatar's pupil over OSC. Kept separate from desktop-app on purpose: the only
+# thing they share is a dozen lines of rosc, and the dependency sets have
+# nothing else in common.
+[package]
+name = "pupil-osc"
+version = "0.1.0"
+edition = "2021"
+description = "Qoyri pupil-osc — scene brightness -> VRChat avatar pupil size over OSC"
+license = "MIT"
+
+[dependencies]
+rosc = "0.10"
+serde = { version = "1", features = ["derive"] }
+log = "0.4"
+env_logger = "0.11"
+toml = "1.1.4"
+
+# Screen capture is Windows-only: Windows.Graphics.Capture, targeted at the
+# VRChat window so the reading survives alt-tabbing.
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-capture = "2.0.1"

@@ -1,0 +1,4 @@
+# Static CRT, so the shipped .exe imports only DLLs Windows itself provides and
+# runs without the Visual C++ Redistributable. Same reasoning as desktop-app.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
