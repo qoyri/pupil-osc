@@ -90,15 +90,29 @@ mod app {
     /// and waits quietly when it does not.
     fn capture_loop(title: &str, fps: u32, center_weight: f32, latest: LatestLuminance) {
         let mut announced_missing = false;
+        let mut last_error: Option<String> = None;
         loop {
             match capture::find_window(title) {
                 Some(window) => {
                     announced_missing = false;
-                    info!("capturing \"{title}\"");
-                    if let Err(e) = capture::run(window, fps, center_weight, latest.clone()) {
-                        warn!("capture stopped: {e}");
-                    } else {
-                        info!("capture ended (window closed)");
+                    if last_error.is_none() {
+                        info!("capturing \"{title}\"");
+                    }
+                    match capture::run(window, fps, center_weight, latest.clone()) {
+                        Ok(()) => {
+                            last_error = None;
+                            info!("capture ended (window closed)");
+                        }
+                        // A capture that fails on attach fails again every retry.
+                        // Say it once and stay quiet until something changes,
+                        // rather than filling the console with the same line.
+                        Err(e) => {
+                            if last_error.as_deref() != Some(e.as_str()) {
+                                warn!("capture stopped: {e}");
+                                warn!("retrying every {}s, quietly from here", RETRY.as_secs());
+                                last_error = Some(e);
+                            }
+                        }
                     }
                     // Whatever ended it, the scene is no longer visible: let the
                     // pupil settle open rather than freeze on the last reading.
